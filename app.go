@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/umanit/toggl-redmine/internal/cfg"
 )
 
 // App struct
@@ -18,10 +19,16 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
+	a.ctx = cfg.ContextWithConfig(ctx)
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+// CanSynchronize indique si l’accès à l’écran « Synchroniser » est possible ou non.
+// Il est nécessaire d’avoir configuré les clés et URLs des APIs pour y avoir accès.
+func (a *App) CanSynchronize() bool {
+	c, ok := cfg.ConfigFromContext(a.ctx)
+	if !ok {
+		return false
+	}
+
+	return c.AllFill()
 }

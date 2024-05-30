@@ -1,10 +1,14 @@
-module toggl-redmine-wails-react
+module github.com/umanit/toggl-redmine
 
 go 1.21
 
 toolchain go1.22.3
 
-require github.com/wailsapp/wails/v2 v2.8.2
+require (
+	github.com/cristalhq/aconfig v0.18.5
+	github.com/cristalhq/aconfig/aconfigyaml v0.17.1
+	github.com/wailsapp/wails/v2 v2.8.2
+)
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
@@ -34,6 +38,7 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.8.2 => /home/djlechuck/go/pkg/mod

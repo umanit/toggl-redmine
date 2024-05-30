@@ -1,7 +1,7 @@
 import React from 'react';
 import {HashRouter as Router, Route, Routes} from 'react-router-dom';
 import Layout from './Layout/Layout';
-import Home from './Home/Container';
+import Home from './Home.jsx';
 import Synchronise from './Synchronise/Container';
 import Configure from './Configure/Container';
 
