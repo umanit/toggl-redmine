@@ -10,7 +10,7 @@ jobs:
                 build: [
                     { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest },
                     { name: toggl-redmine, platform: darwin/arm64, os: macos-latest },
-                    { name: toggl-redmine, platform: darwin/adm64, os: macos-latest }
+                    { name: toggl-redmine, platform: darwin/amd64, os: macos-latest }
                 ]
         runs-on: ${{ matrix.build.os }}
         steps:
