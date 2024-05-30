@@ -1,0 +1,24 @@
+name: Wails build
+
+on: [workflow_dispatch]
+
+jobs:
+    build:
+        strategy:
+            fail-fast: false
+            matrix:
+                build: [
+                    { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest },
+                    { name: toggl-redmine, platform: darwin/arm64, os: macos-latest },
+                    { name: toggl-redmine, platform: darwin/adm64, os: macos-latest }
+                ]
+        runs-on: ${{ matrix.build.os }}
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    submodules: recursive
+            -   uses: dAppServer/wails-build-action@v2.2
+                with:
+                    build-name: ${{ matrix.build.name }}
+                    build-platform: ${{ matrix.build.platform }}
+                    sign: false
