@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"time"
 
+	"github.com/umanit/toggl-redmine/internal/api"
 	"github.com/umanit/toggl-redmine/internal/cfg"
 )
 
@@ -42,6 +44,7 @@ func (a *App) LoadConfig() *cfg.Config {
 	return &c
 }
 
+// SaveConfig enregistre les informations fournies dans le formulaire de la page « Configurer »
 func (a *App) SaveConfig(config cfg.Config) bool {
 	c, ok := cfg.ConfigFromContext(a.ctx)
 	if !ok {
@@ -53,4 +56,33 @@ func (a *App) SaveConfig(config cfg.Config) bool {
 	}
 
 	return true
+}
+
+func (a *App) TestCredentials() api.CredentialsTest {
+	cr := api.CredentialsTest{}
+	c, ok := cfg.ConfigFromContext(a.ctx)
+	if !ok {
+		return cr
+	}
+
+	r := api.NewRedmine(c.Redmine)
+	t := api.NewTogglTrack(c.Toggl)
+	timeout := 3 * time.Second
+
+	// On n’utilise pas le même contexte afin de ne pas arrêter automatiquement l’autre test si l’un des deux plante.
+	rctx, rcancel := context.WithTimeout(context.Background(), timeout)
+	defer rcancel()
+
+	if err := r.CheckUser(rctx); err == nil {
+		cr.RedmineOk = true
+	}
+
+	tctx, tcancel := context.WithTimeout(context.Background(), timeout)
+	defer tcancel()
+
+	if err := t.CheckUser(tctx); err == nil {
+		cr.TogglTrackOk = true
+	}
+
+	return cr
 }

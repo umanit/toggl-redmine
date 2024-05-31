@@ -1,11 +1,11 @@
 export namespace cfg {
 	
-	export class api {
+	export class ApiConfig {
 	    key: string;
 	    url: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new api(source);
+	        return new ApiConfig(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -15,8 +15,8 @@ export namespace cfg {
 	    }
 	}
 	export class Config {
-	    toggl?: api;
-	    redmine?: api;
+	    toggl?: ApiConfig;
+	    redmine?: ApiConfig;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -24,8 +24,8 @@ export namespace cfg {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.toggl = this.convertValues(source["toggl"], api);
-	        this.redmine = this.convertValues(source["redmine"], api);
+	        this.toggl = this.convertValues(source["toggl"], ApiConfig);
+	        this.redmine = this.convertValues(source["redmine"], ApiConfig);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

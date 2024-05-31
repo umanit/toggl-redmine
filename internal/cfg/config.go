@@ -15,14 +15,14 @@ const (
 	key
 )
 
-type api struct {
+type ApiConfig struct {
 	Key string `json:"key"`
 	Url string `json:"url"`
 }
 
 type Config struct {
-	Toggl   *api `json:"toggl"`
-	Redmine *api `json:"redmine"`
+	Toggl   *ApiConfig `json:"toggl"`
+	Redmine *ApiConfig `json:"redmine"`
 }
 
 func ContextWithConfig(ctx context.Context) context.Context {
