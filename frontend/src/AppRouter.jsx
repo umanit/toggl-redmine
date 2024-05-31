@@ -1,9 +1,9 @@
 import React from 'react';
 import {HashRouter as Router, Route, Routes} from 'react-router-dom';
-import Layout from './Layout/Layout';
-import Home from './Home.jsx';
-import Synchronise from './Synchronise/Container';
-import Configure from './Configure.jsx';
+import Layout from './Layout';
+import Home from './Home';
+import Synchronise from './Synchronise';
+import Configure from './Configure';
 
 const AppRouter = () => (
   <Router>

@@ -20,7 +20,7 @@ type redmineCurrentUser struct {
 	} `json:"user"`
 }
 
-func (a *Redmine) Authenticate(req *http.Request) {
+func (a *Redmine) Prepare(req *http.Request) {
 	req.Header.Add("X-Redmine-API-Key", a.cfg.Key)
 }
 
@@ -30,7 +30,7 @@ func (a *Redmine) CheckUser(ctx context.Context) error {
 		return err
 	}
 
-	a.Authenticate(req)
+	a.Prepare(req)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

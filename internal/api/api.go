@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	Authenticate(req *http.Request)
+	Prepare(req *http.Request)
 	CheckUser(ctx context.Context) error
 }
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import {Link, Outlet, useLocation} from 'react-router-dom';
 import {Breadcrumb, BreadcrumbItem, Col, Container, Row} from 'react-bootstrap';
-import {BreadcrumbItemLink} from '../Links/BreadcrumbItemLink.jsx';
-import banner from '../assets/images/banner.png';
+import {BreadcrumbItemLink} from './Links/BreadcrumbItemLink.jsx';
+import banner from './assets/images/banner.png';
 
 const Layout = () => {
   const {pathname} = useLocation();
