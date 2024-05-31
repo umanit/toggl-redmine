@@ -32,3 +32,25 @@ func (a *App) CanSynchronize() bool {
 
 	return c.AllFill()
 }
+
+// LoadConfig charge la configuration actuelle de l’application
+func (a *App) LoadConfig() *cfg.Config {
+	c, ok := cfg.ConfigFromContext(a.ctx)
+	if !ok {
+		return nil
+	}
+	return &c
+}
+
+func (a *App) SaveConfig(config cfg.Config) bool {
+	c, ok := cfg.ConfigFromContext(a.ctx)
+	if !ok {
+		return false
+	}
+
+	if err := c.Save(config); err != nil {
+		return false
+	}
+
+	return true
+}
