@@ -3,11 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
+	"time"
 
 	"github.com/umanit/toggl-redmine/internal/cfg"
+	"github.com/umanit/toggl-redmine/internal/redmine"
 )
 
 type Redmine struct {
@@ -25,25 +25,7 @@ func (a *Redmine) Prepare(req *http.Request) {
 }
 
 func (a *Redmine) CheckUser(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.cfg.Url+"/users/current.json", nil)
-	if err != nil {
-		return err
-	}
-
-	a.Prepare(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("redmine returned non-200 status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/users/current.json")
 	if err != nil {
 		return err
 	}
@@ -55,6 +37,21 @@ func (a *Redmine) CheckUser(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (a *Redmine) LoadTimeEntries(ctx context.Context, dateFrom, dateTo time.Time) ([]redmine.TimeEntry, error) {
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/time_entries.json?user_id=me&limit=100&spent_on=><"+
+		dateFrom.Format(time.DateOnly)+"|"+dateTo.Format(time.DateOnly))
+	if err != nil {
+		return nil, err
+	}
+
+	var entries redmine.TimeEntriesList
+	if err = json.Unmarshal(body, &entries); err != nil {
+		return nil, err
+	}
+
+	return entries.TimeEntries, nil
 }
 
 func NewRedmine(cfg *cfg.ApiConfig) *Redmine {
