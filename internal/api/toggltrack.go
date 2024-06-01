@@ -3,8 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -27,25 +25,7 @@ func (a *TogglTrack) Prepare(req *http.Request) {
 }
 
 func (a *TogglTrack) CheckUser(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.cfg.Url+"/me", nil)
-	if err != nil {
-		return err
-	}
-
-	a.Prepare(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("toggl track returned non-200 status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me")
 	if err != nil {
 		return err
 	}
@@ -59,34 +39,16 @@ func (a *TogglTrack) CheckUser(ctx context.Context) error {
 	return nil
 }
 
+// LoadTasks va charger les tâches entre deux dates fournies.
 func (a *TogglTrack) LoadTasks(ctx context.Context, dateFrom, dateTo time.Time) ([]toggltrack.ApiTask, error) {
 	dateTo = dateTo.AddDate(0, 0, 1)
-
 	dl := time.DateOnly
 	urlParams := url.Values{
 		"start_date": {dateFrom.Format(dl)},
 		"end_date":   {dateTo.Format(dl)},
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.cfg.Url+"/me/time_entries?"+urlParams.Encode(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	a.Prepare(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("toggl track returned non-200 status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries?"+urlParams.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +59,17 @@ func (a *TogglTrack) LoadTasks(ctx context.Context, dateFrom, dateTo time.Time) 
 	}
 
 	return tasks, nil
+}
+
+// HasRunningTask vérifie s’il y a une tâche en cours sur toggl track afin de ne pas la synchroniser par inadvertence.
+func (a *TogglTrack) HasRunningTask(ctx context.Context) bool {
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries/current")
+	if err != nil {
+		return false
+	}
+
+	// L’API de toggl track renvoie « null » s’il n’y a pas de tâche en cours au lieu d’une vraie réponse JSON
+	return string(body) != "null"
 }
 
 func NewTogglTrack(cfg *cfg.ApiConfig) *TogglTrack {

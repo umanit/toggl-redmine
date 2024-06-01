@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
-import {Alert, Button, Col, Form, FormGroup, Row, Spinner, Table, Tooltip} from 'react-bootstrap';
+import {Alert, Button, Col, Form, FormGroup, OverlayTrigger, Row, Spinner, Table, Tooltip} from 'react-bootstrap';
 import DatePicker, {registerLocale} from 'react-datepicker';
-import prettyMilliseconds from 'pretty-ms';
 import {fr} from 'date-fns/locale/fr';
 import {format, parseJSON} from 'date-fns';
 import warning from './assets/images/warning.svg';
@@ -13,6 +12,26 @@ registerLocale('fr', fr);
 
 const today = new Date();
 const formattedDate = (jsonDate) => format(parseJSON(jsonDate), 'dd/MM/yyyy');
+const forHumans = (seconds) => {
+  const units = [
+    {label: 'j', value: 86400},
+    {label: 'h', value: 3600},
+    {label: 'm', value: 60},
+    {label: 's', value: 1}
+  ];
+
+  let result = [];
+
+  for (const unit of units) {
+    const quotient = Math.floor(seconds / unit.value);
+    if (quotient > 0) {
+      result.push(`${quotient}${unit.label}`);
+      seconds -= quotient * unit.value;
+    }
+  }
+
+  return result.join(' ');
+}
 
 export default function Synchronize() {
   const [tasksSynchronised, setTaskSynchronized] = useState(false);
@@ -26,8 +45,9 @@ export default function Synchronize() {
   function loadTasks() {
     setTaskLoading(true);
 
-    LoadTasks(dateFrom, dateTo).then((result) => {
-      setEntries([...Object.values(result)]);
+    LoadTasks(dateFrom, dateTo).then(({Entries, HasRunningTask}) => {
+      setEntries([...Object.values(Entries)]);
+      setHasRunningTask(HasRunningTask);
       setTaskLoading(false);
     });
   }
@@ -65,7 +85,9 @@ export default function Synchronize() {
 
       <p className="lead">Tâches</p>
 
-      {hasRunningTask && <Alert color="info">Une tâche est en cours !</Alert>}
+      {hasRunningTask && <Alert color="info" onClose={() => setHasRunningTask(false)} dismissible>
+        Attention, une tâche est en cours !
+      </Alert>}
 
       <Form onSubmit={() => console.warn('@todo')}>
         <Table striped size="sm">
@@ -75,7 +97,7 @@ export default function Synchronize() {
               <th scope="col">Date</th>
               <th scope="col" className="text-center">Durée</th>
               <th scope="col">Commentaire</th>
-              <th scope="col">Synchroniser ?</th>
+              <th scope="col"><abbr title="Synchroniser ?">Sync. ?</abbr></th>
             </tr>
           </thead>
           <tbody>
@@ -98,18 +120,19 @@ export default function Synchronize() {
                 <tr key={index} id={rowId} className={isMuted ? 'text-muted' : ''}>
                   <th scope="row">
                     {PastDecimalDuration > 0 &&
-                      <>
-                        <img src={warning} height={20} id={`warning-${rowId}`} alt="Attention" />
-                        <Tooltip placement="right" target={`warning-${rowId}`}>
+                      <OverlayTrigger overlay={
+                        <Tooltip id={rowId}>
                           Il y a déjà {PastDecimalDuration} heure(s) enregistrées pour cette tâche.
                         </Tooltip>
-                      </>
+                      } placement="right">
+                        <img src={warning} height={20} id={`warning-${rowId}`} alt="Attention" />
+                      </OverlayTrigger>
                     }
                   </th>
                   <td>{Description}</td>
                   <td>{formattedDate(Date)}</td>
                   <td className="text-center">
-                    {prettyMilliseconds(Duration * 1000)}<br />
+                    {forHumans(Duration)}<br />
                     <div className="text-muted small">({DecimalDuration}h)</div>
                   </td>
                   <td>

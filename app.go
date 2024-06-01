@@ -94,7 +94,7 @@ func (a *App) TestCredentials() api.CredentialsTest {
 
 // LoadTasks permet de charger les temps enregistrés sur toggl track et de les afficher dans un tableau afin de décider
 // lesquels seront à synchroniser sur Redmine.
-func (a *App) LoadTasks(dateFromStr, dateToStr string) toggltrack.AppTasks {
+func (a *App) LoadTasks(dateFromStr, dateToStr string) *toggltrack.AskedTasks {
 	c, ok := cfg.ConfigFromContext(a.ctx)
 	if !ok {
 		return nil
@@ -123,5 +123,8 @@ func (a *App) LoadTasks(dateFromStr, dateToStr string) toggltrack.AppTasks {
 		return nil
 	}
 
-	return toggltrack.ProcessTasks(tasks)
+	return &toggltrack.AskedTasks{
+		Entries:        toggltrack.ProcessTasks(tasks),
+		HasRunningTask: t.HasRunningTask(ctx),
+	}
 }

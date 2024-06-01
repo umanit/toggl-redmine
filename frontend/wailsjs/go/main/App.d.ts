@@ -8,7 +8,7 @@ export function CanSynchronize():Promise<boolean>;
 
 export function LoadConfig():Promise<cfg.Config>;
 
-export function LoadTasks(arg1:string,arg2:string):Promise<toggltrack.AppTasks>;
+export function LoadTasks(arg1:string,arg2:string):Promise<toggltrack.AskedTasks>;
 
 export function SaveConfig(arg1:cfg.Config):Promise<boolean>;
 
