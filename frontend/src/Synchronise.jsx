@@ -4,7 +4,7 @@ import DatePicker, {registerLocale} from 'react-datepicker';
 import {fr} from 'date-fns/locale/fr';
 import {format, parseJSON} from 'date-fns';
 import warning from './assets/images/warning.svg';
-import {LoadTasks} from '../wailsjs/go/main/App.js';
+import {LoadTasks, SynchronizeTasks} from '../wailsjs/go/main/App.js';
 
 import 'react-datepicker/dist/react-datepicker.min.css';
 
@@ -42,7 +42,8 @@ export default function Synchronize() {
   const [entries, setEntries] = useState([]);
   const [synchronising, setSynchronising] = useState(false);
 
-  function loadTasks() {
+  const loadTasks = () => {
+    setEntries([]);
     setTaskLoading(true);
 
     LoadTasks(dateFrom, dateTo).then(({Entries, HasRunningTask}) => {
@@ -50,11 +51,33 @@ export default function Synchronize() {
       setHasRunningTask(HasRunningTask);
       setTaskLoading(false);
     });
-  }
+  };
+  const handleEntrySync = (event) => {
+    const id = parseInt(event.currentTarget.dataset.id, 10);
+
+    setEntries(
+      entries.map(
+        (obj) => obj.Id === id
+          ? {...obj, Sync: event.currentTarget.checked}
+          : obj
+      )
+    );
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setSynchronising(true);
+    SynchronizeTasks(entries).then(() => {
+      setEntries([]);
+      setTaskSynchronized(true);
+      setSynchronising(false);
+    });
+  };
 
   return (
     <>
-      {tasksSynchronised && <Alert color="success">Tâches synchronisées !</Alert>}
+      {tasksSynchronised && <Alert variant="success">Tâches synchronisées !</Alert>}
 
       <p className="lead">Dates à synchroniser</p>
 
@@ -75,7 +98,7 @@ export default function Synchronize() {
         </Row>
         <FormGroup>
           <Col className="text-center mt-3">
-            <Button color="primary" onClick={loadTasks} disabled={taskLoading}>
+            <Button onClick={loadTasks} disabled={taskLoading}>
               {taskLoading && <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />}
               Charger les tâches
             </Button>
@@ -85,11 +108,11 @@ export default function Synchronize() {
 
       <p className="lead">Tâches</p>
 
-      {hasRunningTask && <Alert color="info" onClose={() => setHasRunningTask(false)} dismissible>
+      {hasRunningTask && <Alert variant="info" onClose={() => setHasRunningTask(false)} dismissible>
         Attention, une tâche est en cours !
       </Alert>}
 
-      <Form onSubmit={() => console.warn('@todo')}>
+      <Form onSubmit={handleSubmit}>
         <Table striped size="sm">
           <thead>
             <tr>
@@ -106,18 +129,18 @@ export default function Synchronize() {
                 <td colSpan={6} className="text-center">Aucune tâche</td>
               </tr>
             }
-            {entries.map((entry, index) => {
+            {entries.map((entry) => {
               const {
-                Description, Duration, DecimalDuration, PastDecimalDuration,
+                Id, Description, Duration, DecimalDuration, PastDecimalDuration,
                 Date, IsValid, Comment, Sync
               } = entry;
-              const rowId = `row-${index}`;
-              const commentId = `comment-${index}`;
-              const syncId = `sync-${index}`;
+              const rowId = `row-${Id}`;
+              const commentId = `comment-${Id}`;
+              const syncId = `sync-${Id}`;
               const isMuted = !IsValid || 0 === DecimalDuration;
 
               return (
-                <tr key={index} id={rowId} className={isMuted ? 'text-muted' : ''}>
+                <tr key={Id} id={rowId} className={isMuted ? 'text-muted' : ''}>
                   <th scope="row">
                     {PastDecimalDuration > 0 &&
                       <OverlayTrigger overlay={
@@ -139,19 +162,23 @@ export default function Synchronize() {
                     {0 === DecimalDuration && <span className="small">Aucun temps !</span>}
                     {!isMuted &&
                       <Form.Control type="text" name="comment" id={commentId} defaultValue={Comment}
-                                    data-id={index} size="sm" />
+                                    data-id={Id} size="sm" />
                     }
                     {!IsValid &&
-                      <Tooltip placement="top" target={rowId}>
-                        Description invalide ! Elle doit commencer par <code>#</code> puis être suivie uniquement de
-                        chiffres !
-                      </Tooltip>
+                      <OverlayTrigger overlay={
+                        <Tooltip id={rowId}>
+                          Description invalide ! Elle doit commencer par <code>#</code> puis être suivie uniquement de
+                          chiffres !
+                        </Tooltip>
+                      } placement="top">
+                        <img src={warning} height={20} id={`warning-${rowId}`} alt="Attention" />
+                      </OverlayTrigger>
                     }
                   </td>
                   <td>
                     {!isMuted &&
                       <Form.Check type="checkbox" name="sync" id={syncId} className="text-center"
-                                  defaultChecked={Sync} data-id={index} />
+                                  defaultChecked={Sync} data-id={Id} onInput={handleEntrySync} />
                     }
                   </td>
                 </tr>
@@ -163,7 +190,7 @@ export default function Synchronize() {
         {!!entries.length &&
           <Row className="mb-3 text-center">
             <Col>
-              <Button type="submit" color="primary" disabled={synchronising}>
+              <Button type="submit" disabled={synchronising}>
                 {synchronising && <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />}
                 Synchroniser vers Redmine
               </Button>

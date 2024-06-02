@@ -135,3 +135,18 @@ func (a *App) LoadTasks(dateFromStr, dateToStr string) *toggltrack.AskedTasks {
 		HasRunningTask: t.HasRunningTask(ctx),
 	}
 }
+
+func (a *App) SynchronizeTasks(tasks []toggltrack.AppTask) {
+	c, ok := cfg.ConfigFromContext(a.ctx)
+	if !ok {
+		return
+	}
+
+	r := api.NewRedmine(c.Redmine)
+	if err := r.SynchronizeTimeEntries(a.ctx, tasks); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	return
+}

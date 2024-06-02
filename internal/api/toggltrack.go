@@ -19,13 +19,14 @@ type togglTrackCurrentUser struct {
 	Id int `json:"id"`
 }
 
+// Prepare permet d’altérer la requête HTTP qui va être envoyée.
 func (a *TogglTrack) Prepare(req *http.Request) {
 	req.SetBasicAuth(a.cfg.Key, "api_token")
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 }
 
+// CheckUser vérifie si l’API est joignable et répond correctement.
 func (a *TogglTrack) CheckUser(ctx context.Context) error {
-	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me")
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me", nil)
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (a *TogglTrack) LoadTasks(ctx context.Context, dateFrom, dateTo time.Time) 
 		"end_date":   {dateTo.Format(dl)},
 	}
 
-	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries?"+urlParams.Encode())
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries?"+urlParams.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (a *TogglTrack) LoadTasks(ctx context.Context, dateFrom, dateTo time.Time) 
 
 // HasRunningTask vérifie s’il y a une tâche en cours sur toggl track afin de ne pas la synchroniser par inadvertence.
 func (a *TogglTrack) HasRunningTask(ctx context.Context) bool {
-	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries/current")
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries/current", nil)
 	if err != nil {
 		return false
 	}
@@ -72,6 +73,7 @@ func (a *TogglTrack) HasRunningTask(ctx context.Context) bool {
 	return string(body) != "null"
 }
 
+// NewTogglTrack crée un nouveau client d’API toggl track à partir de la configuration.
 func NewTogglTrack(cfg *cfg.ApiConfig) *TogglTrack {
 	return &TogglTrack{
 		cfg: cfg,

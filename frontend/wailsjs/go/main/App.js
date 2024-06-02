@@ -18,6 +18,10 @@ export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
+export function SynchronizeTasks(arg1) {
+  return window['go']['main']['App']['SynchronizeTasks'](arg1);
+}
+
 export function TestCredentials() {
   return window['go']['main']['App']['TestCredentials']();
 }

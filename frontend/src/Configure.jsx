@@ -143,7 +143,7 @@ export default function Configure() {
           </Container>
         </Form.Group>
         <ButtonGroup className="mt-3">
-          <Button color="primary" disabled={testingCredentials} onClick={() => testCredentials()}>
+          <Button disabled={testingCredentials} onClick={() => testCredentials()}>
             {testingCredentials &&
               <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
             }

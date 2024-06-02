@@ -39,9 +39,15 @@ type AskedTasks struct {
 
 type appTasks map[string]*AppTask
 
+// sameAsRedmineEntry vérifie si la tâche est équivalent à l’entrée de temps Redmine fournie.
 func (task *AppTask) sameAsRedmineEntry(entry redmine.TimeEntry) bool {
 	return entry.Issue.Id == task.Issue && entry.SpentOn == task.Date.Format(time.DateOnly) &&
 		entry.Hours == task.DecimalDuration
+}
+
+// IsSyncable vérifie si la tâche est synchronisable.
+func (task *AppTask) IsSyncable() bool {
+	return !task.Sync || !task.IsValid || 0 == task.DecimalDuration
 }
 
 func ProcessTasks(tasks []ApiTask, timeEntries []redmine.TimeEntry) []*AppTask {

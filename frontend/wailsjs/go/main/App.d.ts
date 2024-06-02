@@ -12,4 +12,6 @@ export function LoadTasks(arg1:string,arg2:string):Promise<toggltrack.AskedTasks
 
 export function SaveConfig(arg1:cfg.Config):Promise<boolean>;
 
+export function SynchronizeTasks(arg1:Array<toggltrack.AppTask>):Promise<void>;
+
 export function TestCredentials():Promise<api.CredentialsTest>;
