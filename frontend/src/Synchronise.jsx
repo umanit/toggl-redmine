@@ -87,9 +87,7 @@ export default function Synchronize() {
 
   return (
     <>
-      {tasksSynchronised && <Alert variant="success" onClose={() => setTaskSynchronized(false)}>
-        Tâches synchronisées !
-      </Alert>}
+      {tasksSynchronised && <Alert variant="success">Tâches synchronisées !</Alert>}
 
       <p className="lead">Dates à synchroniser</p>
 

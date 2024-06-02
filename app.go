@@ -12,6 +12,7 @@ import (
 
 const (
 	httpCallTimeout = 3 * time.Second
+	errorEvent      = "goError"
 )
 
 type App struct {
@@ -35,18 +36,22 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) logError(msg string) {
+	runtime.EventsEmit(a.ctx, errorEvent)
 	runtime.LogError(a.ctx, msg)
 }
 
 func (a *App) logErrorf(msg string, args ...interface{}) {
+	runtime.EventsEmit(a.ctx, errorEvent)
 	runtime.LogErrorf(a.ctx, msg, args)
 }
 
 func (a *App) logFatal(msg string) {
+	runtime.EventsEmit(a.ctx, errorEvent)
 	runtime.LogFatal(a.ctx, msg)
 }
 
 func (a *App) logFatalf(msg string, args ...interface{}) {
+	runtime.EventsEmit(a.ctx, errorEvent)
 	runtime.LogFatalf(a.ctx, msg, args)
 }
 

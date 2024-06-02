@@ -70,9 +70,7 @@ export default function Configure() {
 
   return (
     <>
-      {showAlert && <Alert variant="success" onClose={() => setShowAlert(false)}>
-        Configuration enregistrée !
-      </Alert>}
+      {showAlert && <Alert variant="success">Configuration enregistrée !</Alert>}
 
       <p className="lead">
         Veuillez renseigner les clés et les URLs d’API de toggl track et Redmine afin de pour pouvoir utiliser la
