@@ -6,10 +6,17 @@ export default function Configure() {
   const [showAlert, setShowAlert] = useState(false);
   const [config, setConfig] = useState({});
   const [formValidated, setFormValidated] = useState(false);
+  const [canTestCredentials, setCanTestCredentials] = useState(false);
   const [testingCredentials, setTestingCredentials] = useState(false);
   const [togglTrackOk, setToggleTrackOk] = useState(null);
   const [redmineOk, setRedmineOk] = useState(null);
 
+  const loadConfig = () => {
+    LoadConfig().then(({Config, IsValid}) => {
+      setConfig(Config);
+      setCanTestCredentials(IsValid);
+    });
+  }
   const handleSubmit = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -29,11 +36,10 @@ export default function Configure() {
         }
       };
 
-      setConfig(config);
-      SaveConfig(config).then(ok => {
-        if (ok) {
-          setShowAlert(true);
-        }
+      SaveConfig(config).then(() => {
+        setShowAlert(true);
+
+        loadConfig();
       });
     }
 
@@ -50,9 +56,7 @@ export default function Configure() {
     });
   };
 
-  useEffect(() => {
-    LoadConfig().then((c) => setConfig(c));
-  }, []);
+  useEffect(() => loadConfig(), []);
 
   useEffect(() => {
     let timer;
@@ -153,7 +157,7 @@ export default function Configure() {
           </Container>
         </Form.Group>
         <ButtonGroup className="mt-3">
-          <Button disabled={testingCredentials} onClick={() => testCredentials()}>
+          <Button disabled={!canTestCredentials || testingCredentials} onClick={() => testCredentials()}>
             {testingCredentials &&
               <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
             }

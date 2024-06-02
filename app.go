@@ -18,6 +18,11 @@ type App struct {
 	ctx context.Context
 }
 
+type LoadedConfig struct {
+	Config  cfg.Config
+	IsValid bool
+}
+
 // NewApp crée une nouvelle application de struct App.
 func NewApp() *App {
 	return &App{}
@@ -53,21 +58,22 @@ func (a *App) CanSynchronize() bool {
 	return c.AllValuesFilled()
 }
 
-// LoadConfig charge la configuration actuelle de l’application
-func (a *App) LoadConfig() *cfg.Config {
+// LoadConfig charge la configuration actuelle de l’application en indiquant si elle est complète.
+func (a *App) LoadConfig() LoadedConfig {
 	c := cfg.ConfigFromContext(a.ctx)
-	return &c
+	return LoadedConfig{
+		Config:  c,
+		IsValid: c.AllValuesFilled(),
+	}
 }
 
 // SaveConfig enregistre les informations fournies dans le formulaire de la page « Configurer »
-func (a *App) SaveConfig(config cfg.Config) bool {
+func (a *App) SaveConfig(config cfg.Config) {
 	c := cfg.ConfigFromContext(a.ctx)
 
 	if err := c.Save(config); err != nil {
 		a.logFatal("can't save config")
 	}
-
-	return true
 }
 
 // TestCredentials vérifie que les APIs sont joignables.
