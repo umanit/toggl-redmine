@@ -9,5 +9,9 @@
   "author": {
     "name": "Vivien DE BONA",
     "email": "vdebona@umanit.fr"
+  },
+  "info": {
+    "companyName": "UmanIT",
+    "productName": "toggl track - Redmine"
   }
 }
