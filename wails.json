@@ -12,6 +12,7 @@
   },
   "info": {
     "companyName": "UmanIT",
-    "productName": "toggl track - Redmine"
+    "productName": "toggl track - Redmine",
+    "productVersion": "2.0.0"
   }
 }
