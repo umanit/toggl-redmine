@@ -2,10 +2,10 @@ package cfg
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"github.com/spf13/viper"
+	"github.com/umanit/toggl-redmine/internal/app"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type configKey int
@@ -26,37 +26,38 @@ type Config struct {
 }
 
 func ContextWithConfig(ctx context.Context) context.Context {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		panic(fmt.Errorf("cannot find home directory: %v", err))
-	}
-
-	viper.AddConfigPath(home)
+	appDir := app.GetAppDir()
+	viper.AddConfigPath(appDir)
 	viper.SetConfigType("json")
-	viper.SetConfigName(".toggl-redmine")
-	viper.SetDefault("toggl.url", "https://suivi.umanit.fr")
-	viper.SetDefault("redmine.url", "https://api.track.toggl.com/api/v9")
+	viper.SetConfigName("config")
+	viper.SetDefault("toggl.url", "https://api.track.toggl.com/api/v9")
+	viper.SetDefault("redmine.url", "https://suivi.umanit.fr")
 	_ = viper.SafeWriteConfig()
 
-	if err = viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("cannot read config file: %v", err))
+	if err := viper.ReadInConfig(); err != nil {
+		runtime.LogFatalf(ctx, "cannot read config file: %v", err)
 	}
 
 	var cfg Config
-	if err = viper.Unmarshal(&cfg); err != nil {
-		panic(fmt.Errorf("cannot parse config file: %v", err))
+	if err := viper.Unmarshal(&cfg); err != nil {
+		runtime.LogFatalf(ctx, "cannot parse config file: %v", err)
 	}
 
 	return context.WithValue(ctx, key, cfg)
 }
 
-func ConfigFromContext(ctx context.Context) (Config, bool) {
+func ConfigFromContext(ctx context.Context) Config {
 	cfg, ok := ctx.Value(key).(Config)
-	return cfg, ok
+	if !ok {
+		runtime.LogFatal(ctx, "can't load config")
+	}
+
+	return cfg
 }
 
-func (c *Config) AllFill() bool {
-	return c.Toggl != nil && c.Redmine != nil && c.Redmine.Key != "" && c.Redmine.Url != "" && c.Toggl.Key != "" && c.Toggl.Url != ""
+func (c *Config) AllValuesFilled() bool {
+	return c.Toggl != nil && c.Redmine != nil && c.Redmine.Key != "" && c.Redmine.Url != "" &&
+		c.Toggl.Key != "" && c.Toggl.Url != ""
 }
 
 func (c *Config) Save(n Config) error {

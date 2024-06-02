@@ -63,14 +63,14 @@ func (a *TogglTrack) LoadTasks(ctx context.Context, dateFrom, dateTo time.Time) 
 }
 
 // HasRunningTask vérifie s’il y a une tâche en cours sur toggl track afin de ne pas la synchroniser par inadvertence.
-func (a *TogglTrack) HasRunningTask(ctx context.Context) bool {
+func (a *TogglTrack) HasRunningTask(ctx context.Context) (bool, error) {
 	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/me/time_entries/current", nil)
 	if err != nil {
-		return false
+		return false, err
 	}
 
 	// L’API de toggl track renvoie « null » s’il n’y a pas de tâche en cours au lieu d’une vraie réponse JSON
-	return string(body) != "null"
+	return string(body) != "null", nil
 }
 
 // NewTogglTrack crée un nouveau client d’API toggl track à partir de la configuration.

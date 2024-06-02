@@ -47,7 +47,7 @@ func (task *AppTask) sameAsRedmineEntry(entry redmine.TimeEntry) bool {
 
 // IsSyncable vérifie si la tâche est synchronisable.
 func (task *AppTask) IsSyncable() bool {
-	return !task.Sync || !task.IsValid || 0 == task.DecimalDuration
+	return task.Sync && task.IsValid && 0 != task.DecimalDuration
 }
 
 func ProcessTasks(tasks []ApiTask, timeEntries []redmine.TimeEntry) []*AppTask {

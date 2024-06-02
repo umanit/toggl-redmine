@@ -41,7 +41,13 @@ func call(a Service, ctx context.Context, method, endpoint string, payload []byt
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("api call returned non-200 status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+
+		return nil, fmt.Errorf("api call returned non-200/201 status code: %d; body %s; payload %s",
+			resp.StatusCode,
+			string(body),
+			string(payload),
+		)
 	}
 
 	return io.ReadAll(resp.Body)
