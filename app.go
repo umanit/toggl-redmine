@@ -124,15 +124,14 @@ func (a *App) LoadTasks(dateFromStr, dateToStr string) *toggltrack.AskedTasks {
 	}
 
 	r := api.NewRedmine(c.Redmine)
-	entries, err := r.LoadTimeEntries(ctx, dateFrom, dateTo)
+	timeEntries, err := r.LoadTimeEntries(ctx, dateFrom, dateTo)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-	fmt.Printf("%+v\n", entries)
 
 	return &toggltrack.AskedTasks{
-		Entries:        toggltrack.ProcessTasks(tasks),
+		Entries:        toggltrack.ProcessTasks(tasks, timeEntries),
 		HasRunningTask: t.HasRunningTask(ctx),
 	}
 }

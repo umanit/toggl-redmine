@@ -7,24 +7,29 @@ import (
 	"math"
 	"sort"
 	"time"
+
+	"github.com/umanit/toggl-redmine/internal/redmine"
 )
 
 type ApiTask struct {
+	Id          int       `json:"id"`
 	Description string    `json:"description"`
 	Duration    int       `json:"duration"`
 	Start       time.Time `json:"start"`
 }
 
 type AppTask struct {
-	Issue               string
+	Id                  int
+	Issue               int
 	Comment             string
 	Duration            int
 	DecimalDuration     float64
-	PastDecimalDuration int
+	PastDecimalDuration float64
 	Sync                bool
 	Date                time.Time
 	Description         string
 	IsValid             bool
+	MatchedWithRedmine  bool
 }
 
 type AskedTasks struct {
@@ -34,11 +39,18 @@ type AskedTasks struct {
 
 type appTasks map[string]*AppTask
 
-func ProcessTasks(tasks []ApiTask) []*AppTask {
-	e := groupTasks(tasks)
-	computeDecimalDurations(&e)
+func (task *AppTask) sameAsRedmineEntry(entry redmine.TimeEntry) bool {
+	return entry.Issue.Id == task.Issue && entry.SpentOn == task.Date.Format(time.DateOnly) &&
+		entry.Hours == task.DecimalDuration
+}
 
-	return sortTasks(e)
+func ProcessTasks(tasks []ApiTask, timeEntries []redmine.TimeEntry) []*AppTask {
+	t := groupTasks(tasks)
+	computeDecimalDurations(&t)
+	st := sortTasks(t)
+	mutateWithRedmineEntries(st, timeEntries)
+
+	return st
 }
 
 // UnmarshalJSON personnalisé uniquement pour corriger le fait que l’API de toggl track renvoie une durée négative si
@@ -73,6 +85,7 @@ func groupTasks(tasks []ApiTask) appTasks {
 
 		if _, ok := e[k]; !ok {
 			e[k] = &AppTask{
+				Id:          t.Id,
 				Issue:       i.Number,
 				Comment:     i.Description,
 				Sync:        i.IsValid,
@@ -89,13 +102,26 @@ func groupTasks(tasks []ApiTask) appTasks {
 }
 
 // computeDecimalDuration convertie les durées des tâches au format décimal
-func computeDecimalDurations(e *appTasks) {
-	for _, t := range *e {
-		d := math.Round((float64(t.Duration)/3600)*4) / 4
-		if d == 0 && t.Duration > 0 {
-			t.DecimalDuration = .25
+func computeDecimalDurations(t *appTasks) {
+	for _, task := range *t {
+		d := math.Round((float64(task.Duration)/3600)*4) / 4
+		if d == 0 && task.Duration > 0 {
+			task.DecimalDuration = .25
 		} else {
-			t.DecimalDuration = d
+			task.DecimalDuration = d
+		}
+	}
+}
+
+// mutateWithRedmineEntries va vérifier si du temps a déjà été synchronisé sur Redmine
+func mutateWithRedmineEntries(t []*AppTask, timeEntries []redmine.TimeEntry) {
+	for _, entry := range timeEntries {
+		for _, task := range t {
+			if !task.MatchedWithRedmine && task.sameAsRedmineEntry(entry) {
+				task.PastDecimalDuration = entry.Hours
+				task.Sync = task.IsValid && 0 == entry.Hours
+				task.MatchedWithRedmine = true
+			}
 		}
 	}
 }
@@ -110,10 +136,10 @@ func computeKey(t ApiTask) string {
 }
 
 // sortTasks convertie la map en slice et trie les tâches par date décroissante
-func sortTasks(e appTasks) []*AppTask {
-	tasks := make([]*AppTask, 0, len(e))
-	for _, t := range e {
-		tasks = append(tasks, t)
+func sortTasks(t appTasks) []*AppTask {
+	tasks := make([]*AppTask, 0, len(t))
+	for _, task := range t {
+		tasks = append(tasks, task)
 	}
 
 	sort.Slice(tasks, func(i, j int) bool {

@@ -2,10 +2,11 @@ package toggltrack
 
 import (
 	"regexp"
+	"strconv"
 )
 
 type issue struct {
-	Number      string
+	Number      int
 	Description string
 	IsValid     bool
 }
@@ -26,7 +27,11 @@ func newIssue(apiDesc string) issue {
 	}
 
 	if indexExists(m, 1) && m[1] != "" {
-		i.Number = m[1]
+		n, err := strconv.Atoi(m[1])
+		if err != nil {
+			n = 0
+		}
+		i.Number = n
 	}
 
 	if indexExists(m, 2) && m[2] != "" {
