@@ -54,9 +54,19 @@ export default function Configure() {
     LoadConfig().then((c) => setConfig(c));
   }, []);
 
+  useEffect(() => {
+    let timer;
+    if (showAlert) {
+      timer = setTimeout(() => {
+        setShowAlert(false);
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [showAlert]);
+
   return (
     <>
-      {showAlert && <Alert variant="success" onClose={() => setShowAlert(false)} dismissible>
+      {showAlert && <Alert variant="success" onClose={() => setShowAlert(false)}>
         Configuration enregistrée !
       </Alert>}
 

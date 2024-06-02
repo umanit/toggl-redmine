@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Alert, Button, Col, Form, FormGroup, OverlayTrigger, Row, Spinner, Table, Tooltip} from 'react-bootstrap';
 import DatePicker, {registerLocale} from 'react-datepicker';
 import {fr} from 'date-fns/locale/fr';
@@ -75,9 +75,21 @@ export default function Synchronize() {
     });
   };
 
+  useEffect(() => {
+    let timer;
+    if (tasksSynchronised) {
+      timer = setTimeout(() => {
+        setTaskSynchronized(false);
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [tasksSynchronised]);
+
   return (
     <>
-      {tasksSynchronised && <Alert variant="success">Tâches synchronisées !</Alert>}
+      {tasksSynchronised && <Alert variant="success" onClose={() => setTaskSynchronized(false)}>
+        Tâches synchronisées !
+      </Alert>}
 
       <p className="lead">Dates à synchroniser</p>
 
