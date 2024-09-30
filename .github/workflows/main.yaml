@@ -11,7 +11,7 @@ jobs:
             fail-fast: false
             matrix:
                 build: [
-                    { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest },
+                    { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest, tags: 'webkit2_41' },
                     { name: toggl-redmine, platform: darwin/universal, os: macos-latest }
                 ]
         runs-on: ${{ matrix.build.os }}
@@ -23,4 +23,5 @@ jobs:
                 with:
                     build-name: ${{ matrix.build.name }}
                     build-platform: ${{ matrix.build.platform }}
+                    build-tags: ${{ matrix.build.tags }}
                     sign: false
