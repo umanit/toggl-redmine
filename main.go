@@ -44,8 +44,9 @@ func main() {
 		},
 		Logger: logger.Create(),
 		Linux: &linux.Options{
-			ProgramName: appName,
-			Icon:        icon,
+			ProgramName:      appName,
+			Icon:             icon,
+			WebviewGpuPolicy: linux.WebviewGpuPolicyNever,
 		},
 	})
 
