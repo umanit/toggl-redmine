@@ -21,7 +21,9 @@ jobs:
                     submodules: recursive
             -   name: Installation de libwebkit2gtk-4.1-dev
                 if: "${{ matrix.build.platform == 'linux/amd64' }}"
-                run: sudo apt install -y libwebkit2gtk-4.1-dev
+                run: |
+                    sudo apt update
+                    sudo apt install -y libwebkit2gtk-4.1-dev
             -   uses: DjLeChuck/wails-build-action@feature/allow-wails-build-tags
                 with:
                     build-name: ${{ matrix.build.name }}
