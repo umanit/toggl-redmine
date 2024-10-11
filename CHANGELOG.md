@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.0] - 2024-10-11
 
+### Added
+
 - Permet de matcher le n° de ticket même s’il y a du texte avant
 
 ## [2.0.2] - 2024-09-30
