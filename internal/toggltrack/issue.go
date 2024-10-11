@@ -18,7 +18,7 @@ func indexExists(s []string, i int) bool {
 func newIssue(apiDesc string) issue {
 	i := issue{}
 
-	var re = regexp.MustCompile(`^#?([0-9]+)(?: - )?(.*)$`)
+	var re = regexp.MustCompile(`^(?:\w* )?#?([0-9]+)(?: - )?(.*)$`)
 	m := re.FindStringSubmatch(apiDesc)
 	i.IsValid = len(m) > 0
 
