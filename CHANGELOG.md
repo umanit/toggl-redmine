@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Le préfixe des numéros de ticket peut comporter des caractères unicodes
+
 ## [2.1.0] - 2024-10-11
 
 ### Added
