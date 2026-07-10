@@ -11,3 +11,11 @@ type TimeEntry struct {
 	Hours   float64 `json:"hours"`
 	SpentOn string  `json:"spent_on"`
 }
+
+type IssuesList struct {
+	Issues []Issue `json:"issues"`
+}
+
+type Issue struct {
+	Id int `json:"id"`
+}

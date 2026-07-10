@@ -16,6 +16,7 @@ type ApiTask struct {
 	Description string    `json:"description"`
 	Duration    int       `json:"duration"`
 	Start       time.Time `json:"start"`
+	IsRunning   bool      `json:"-"`
 }
 
 type AppTask struct {
@@ -30,11 +31,14 @@ type AppTask struct {
 	Description         string
 	IsValid             bool
 	MatchedWithRedmine  bool
+	IsRunning           bool
+	ClosedTooLong       bool
 }
 
 type AskedTasks struct {
-	Entries        []*AppTask
-	HasRunningTask bool
+	Entries            []*AppTask
+	HasRunningTask     bool
+	TogglQuotaResetsIn int
 }
 
 type appTasks map[string]*AppTask
@@ -47,7 +51,7 @@ func (task *AppTask) sameAsRedmineEntry(entry redmine.TimeEntry) bool {
 
 // IsSyncable vérifie si la tâche est synchronisable.
 func (task *AppTask) IsSyncable() bool {
-	return task.Sync && task.IsValid && 0 != task.DecimalDuration
+	return task.Sync && task.IsValid && !task.IsRunning && !task.ClosedTooLong && 0 != task.DecimalDuration
 }
 
 func ProcessTasks(tasks []ApiTask, timeEntries []redmine.TimeEntry) []*AppTask {
@@ -74,6 +78,7 @@ func (task *ApiTask) UnmarshalJSON(data []byte) error {
 	}
 
 	if task.Duration < 0 {
+		task.IsRunning = true
 		task.Duration = 0
 	}
 
@@ -98,10 +103,14 @@ func groupTasks(tasks []ApiTask) appTasks {
 				Date:        t.Start,
 				Description: t.Description,
 				IsValid:     i.IsValid,
+				IsRunning:   t.IsRunning,
 			}
 		}
 
 		e[k].Duration += t.Duration
+		if t.IsRunning {
+			e[k].IsRunning = true
+		}
 	}
 
 	return e
@@ -128,6 +137,42 @@ func mutateWithRedmineEntries(t []*AppTask, timeEntries []redmine.TimeEntry) {
 				task.Sync = task.IsValid && 0 == entry.Hours
 				task.MatchedWithRedmine = true
 			}
+		}
+	}
+}
+
+// DistinctValidIssueIds renvoie les identifiants de tickets valides et uniques référencés par les tâches.
+func DistinctValidIssueIds(tasks []*AppTask) []int {
+	seen := make(map[int]struct{})
+	var ids []int
+
+	for _, task := range tasks {
+		if !task.IsValid {
+			continue
+		}
+		if _, ok := seen[task.Issue]; ok {
+			continue
+		}
+
+		seen[task.Issue] = struct{}{}
+		ids = append(ids, task.Issue)
+	}
+
+	return ids
+}
+
+// MarkClosedTooLong marque les tâches dont le ticket associé est fermé depuis trop longtemps et désactive leur
+// synchronisation.
+func MarkClosedTooLong(tasks []*AppTask, closedIssueIds []int) {
+	closed := make(map[int]struct{}, len(closedIssueIds))
+	for _, id := range closedIssueIds {
+		closed[id] = struct{}{}
+	}
+
+	for _, task := range tasks {
+		if _, ok := closed[task.Issue]; ok {
+			task.ClosedTooLong = true
+			task.Sync = false
 		}
 	}
 }

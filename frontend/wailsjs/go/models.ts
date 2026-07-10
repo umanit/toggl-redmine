@@ -120,6 +120,8 @@ export namespace toggltrack {
 	    Description: string;
 	    IsValid: boolean;
 	    MatchedWithRedmine: boolean;
+	    IsRunning: boolean;
+	    ClosedTooLong: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppTask(source);
@@ -138,6 +140,8 @@ export namespace toggltrack {
 	        this.Description = source["Description"];
 	        this.IsValid = source["IsValid"];
 	        this.MatchedWithRedmine = source["MatchedWithRedmine"];
+	        this.IsRunning = source["IsRunning"];
+	        this.ClosedTooLong = source["ClosedTooLong"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -161,6 +165,7 @@ export namespace toggltrack {
 	export class AskedTasks {
 	    Entries: AppTask[];
 	    HasRunningTask: boolean;
+	    TogglQuotaResetsIn: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new AskedTasks(source);
@@ -170,6 +175,7 @@ export namespace toggltrack {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Entries = this.convertValues(source["Entries"], AppTask);
 	        this.HasRunningTask = source["HasRunningTask"];
+	        this.TogglQuotaResetsIn = source["TogglQuotaResetsIn"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/umanit/toggl-redmine/internal/api"
@@ -11,8 +12,9 @@ import (
 )
 
 const (
-	httpCallTimeout = 3 * time.Second
-	errorEvent      = "goError"
+	httpCallTimeout          = 3 * time.Second
+	errorEvent               = "goError"
+	closedIssueSyncLimitDays = 15
 )
 
 type App struct {
@@ -135,6 +137,11 @@ func (a *App) LoadTasks(dateFromStr, dateToStr string) *toggltrack.AskedTasks {
 
 	tasks, err := t.LoadTasks(ctx, dateFrom, dateTo)
 	if err != nil {
+		var quotaErr *api.TogglQuotaExceededError
+		if errors.As(err, &quotaErr) {
+			return &toggltrack.AskedTasks{TogglQuotaResetsIn: quotaErr.ResetsIn}
+		}
+
 		a.logErrorf("cannot load toggl track tasks %v", err)
 		return nil
 	}
@@ -148,12 +155,30 @@ func (a *App) LoadTasks(dateFromStr, dateToStr string) *toggltrack.AskedTasks {
 
 	h, err := t.HasRunningTask(ctx)
 	if err != nil {
+		var quotaErr *api.TogglQuotaExceededError
+		if errors.As(err, &quotaErr) {
+			return &toggltrack.AskedTasks{TogglQuotaResetsIn: quotaErr.ResetsIn}
+		}
+
 		a.logErrorf("cannot check running task on toggl track %v", err)
 		return nil
 	}
 
+	entries := toggltrack.ProcessTasks(tasks, timeEntries)
+
+	closedIds, err := r.FindIssuesClosedBefore(
+		ctx,
+		toggltrack.DistinctValidIssueIds(entries),
+		time.Now().AddDate(0, 0, -closedIssueSyncLimitDays),
+	)
+	if err != nil {
+		a.logErrorf("cannot check closed issues on Redmine %v", err)
+	} else {
+		toggltrack.MarkClosedTooLong(entries, closedIds)
+	}
+
 	return &toggltrack.AskedTasks{
-		Entries:        toggltrack.ProcessTasks(tasks, timeEntries),
+		Entries:        entries,
 		HasRunningTask: h,
 	}
 }

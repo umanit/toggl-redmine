@@ -41,14 +41,16 @@ export default function Synchronize() {
   const [hasRunningTask, setHasRunningTask] = useState(false);
   const [entries, setEntries] = useState([]);
   const [synchronising, setSynchronising] = useState(false);
+  const [togglQuotaResetsIn, setTogglQuotaResetsIn] = useState(null);
 
   const loadTasks = () => {
     setEntries([]);
     setTaskLoading(true);
 
-    LoadTasks(dateFrom, dateTo).then(({Entries, HasRunningTask}) => {
-      setEntries([...Object.values(Entries)]);
+    LoadTasks(dateFrom, dateTo).then(({Entries, HasRunningTask, TogglQuotaResetsIn}) => {
+      setEntries([...Object.values(Entries || {})]);
       setHasRunningTask(HasRunningTask);
+      setTogglQuotaResetsIn(TogglQuotaResetsIn > 0 ? TogglQuotaResetsIn : null);
       setTaskLoading(false);
     });
   };
@@ -85,6 +87,16 @@ export default function Synchronize() {
     return () => clearTimeout(timer);
   }, [tasksSynchronised]);
 
+  useEffect(() => {
+    let timer;
+    if (togglQuotaResetsIn > 0) {
+      timer = setTimeout(() => {
+        setTogglQuotaResetsIn(null);
+      }, togglQuotaResetsIn * 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [togglQuotaResetsIn]);
+
   return (
     <>
       {tasksSynchronised && <Alert variant="success">Tâches synchronisées !</Alert>}
@@ -118,6 +130,10 @@ export default function Synchronize() {
 
       <p className="lead">Tâches</p>
 
+      {togglQuotaResetsIn > 0 && <Alert variant="danger">
+        Quota de l'API Toggl dépassé. Merci d'attendre {forHumans(togglQuotaResetsIn)} avant de réessayer.
+      </Alert>}
+
       {hasRunningTask && <Alert variant="info" onClose={() => setHasRunningTask(false)} dismissible>
         Attention, une tâche est en cours !
       </Alert>}
@@ -142,15 +158,16 @@ export default function Synchronize() {
             {entries.map((entry) => {
               const {
                 Id, Issue, Duration, DecimalDuration, PastDecimalDuration,
-                Date, IsValid, Comment, Sync
+                Date, IsValid, Comment, Sync, IsRunning, ClosedTooLong
               } = entry;
               const rowId = `row-${Id}`;
               const commentId = `comment-${Id}`;
               const syncId = `sync-${Id}`;
-              const isMuted = !IsValid || 0 === DecimalDuration;
+              const isMuted = !IsValid || 0 === DecimalDuration || IsRunning;
+              const isSyncable = !isMuted && !ClosedTooLong;
 
               return (
-                <tr key={Id} id={rowId} className={isMuted ? 'text-muted' : ''}>
+                <tr key={Id} id={rowId} className={ClosedTooLong ? 'table-danger' : (isMuted ? 'text-muted' : '')}>
                   <th scope="row">
                     {PastDecimalDuration > 0 &&
                       <OverlayTrigger overlay={
@@ -165,12 +182,15 @@ export default function Synchronize() {
                   <td>{`#${Issue}`}</td>
                   <td>{formattedDate(Date)}</td>
                   <td className="text-center">
-                    {forHumans(Duration)}<br />
-                    <div className="text-muted small">({DecimalDuration}h)</div>
+                    {IsRunning
+                      ? <span className="small">Tâche en cours</span>
+                      : <>{forHumans(Duration)}<br /><div className="text-muted small">({DecimalDuration}h)</div></>
+                    }
                   </td>
                   <td>
-                    {0 === DecimalDuration && <span className="small">Aucun temps !</span>}
-                    {!isMuted &&
+                    {IsRunning && <span className="small">Tâche en cours d’enregistrement, non synchronisable !</span>}
+                    {!IsRunning && 0 === DecimalDuration && <span className="small">Aucun temps !</span>}
+                    {isSyncable &&
                       <Form.Control type="text" name="comment" id={commentId} defaultValue={Comment}
                                     data-id={Id} size="sm" />
                     }
@@ -184,9 +204,18 @@ export default function Synchronize() {
                         <img src={warning} height={20} id={`warning-${rowId}`} alt="Attention" />
                       </OverlayTrigger>
                     }
+                    {ClosedTooLong &&
+                      <OverlayTrigger overlay={
+                        <Tooltip id={rowId}>
+                          Ce ticket est fermé depuis plus de 15 jours, la synchronisation n'est pas autorisée.
+                        </Tooltip>
+                      } placement="top">
+                        <img src={warning} height={20} id={`warning-${rowId}`} alt="Attention" />
+                      </OverlayTrigger>
+                    }
                   </td>
                   <td>
-                    {!isMuted &&
+                    {isSyncable &&
                       <Form.Check type="checkbox" name="sync" id={syncId} className="text-center"
                                   defaultChecked={Sync} data-id={Id} onInput={handleEntrySync} />
                     }

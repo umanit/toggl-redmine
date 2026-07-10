@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/umanit/toggl-redmine/internal/cfg"
@@ -67,6 +69,36 @@ func (a *Redmine) LoadTimeEntries(ctx context.Context, dateFrom, dateTo time.Tim
 	}
 
 	return entries.TimeEntries, nil
+}
+
+// FindIssuesClosedBefore renvoie les identifiants des tickets fermés avant la date fournie, parmi la liste donnée.
+func (a *Redmine) FindIssuesClosedBefore(ctx context.Context, issueIds []int, before time.Time) ([]int, error) {
+	if len(issueIds) == 0 {
+		return nil, nil
+	}
+
+	ids := make([]string, len(issueIds))
+	for i, id := range issueIds {
+		ids[i] = strconv.Itoa(id)
+	}
+
+	body, err := call(a, ctx, http.MethodGet, a.cfg.Url+"/issues.json?issue_id="+strings.Join(ids, ",")+
+		"&status_id=closed&closed_on=<="+before.Format(time.DateOnly), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var list redmine.IssuesList
+	if err = json.Unmarshal(body, &list); err != nil {
+		return nil, err
+	}
+
+	closedIds := make([]int, len(list.Issues))
+	for i, issue := range list.Issues {
+		closedIds[i] = issue.Id
+	}
+
+	return closedIds, nil
 }
 
 // SynchronizeTimeEntries va créer de nouvelles entrées à partir de tâches toggl track.

@@ -27,6 +27,7 @@
           shellHook = ''
             echo "toggl-redmine dev shell"
             echo "  go:    $(go version)"
+            echo "  GOROOT: $(go env GOROOT)"
             echo "  wails: $(wails version)"
             echo "  node:  $(node --version)"
             echo "  npm:   $(npm --version)"

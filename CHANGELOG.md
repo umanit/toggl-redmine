@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ajout d'un environnement de développement Nix (`flake.nix` + `.envrc`) fournissant Go, la CLI Wails, Node.js et les
   dépendances système GTK/WebKit nécessaires
+- Affichage d'un bandeau d'erreur lorsque le quota de l'API toggl track est dépassé, avec le délai avant de
+  pouvoir réessayer
+- Blocage de la synchronisation d'une tâche toggl track dont le ticket Redmine associé est fermé depuis plus de
+  15 jours
+
+### Fixed
+
+- Une tâche toggl track en cours d'enregistrement n'est plus synchronisable, même lorsqu'elle est regroupée avec
+  d'autres tâches déjà terminées du même jour/description
 
 ### Changed
 
