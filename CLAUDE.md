@@ -69,6 +69,7 @@ functions.
 
 ## Release
 
-CI (`.github/workflows/main.yaml`) builds on every pushed tag via `wails-build-action`, producing `linux/amd64`
-(with `libwebkit2gtk-4.1-dev` installed and the `webkit2_41` tag) and `darwin/universal` binaries, published as a
-GitHub release.
+CI (`.github/workflows/main.yaml`) builds on every pushed tag via `The-Egg-Corp/wails-build-action`, producing
+`linux/amd64` and `darwin/universal` binaries, published as a GitHub release. The action auto-detects the Ubuntu
+version to install the matching `libwebkit2gtk` dev package and add the `webkit2_41` build tag on 24.04 — this is
+redundant with, but harmless alongside, the `build:tags` fixed in `wails.json`.

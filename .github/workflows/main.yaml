@@ -11,22 +11,19 @@ jobs:
             fail-fast: false
             matrix:
                 build: [
-                    { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest, tags: 'webkit2_41' },
+                    { name: toggl-redmine, platform: linux/amd64, os: ubuntu-latest },
                     { name: toggl-redmine, platform: darwin/universal, os: macos-latest }
                 ]
         runs-on: ${{ matrix.build.os }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@v7
                 with:
                     submodules: recursive
-            -   name: Installation de libwebkit2gtk-4.1-dev
-                if: "${{ matrix.build.platform == 'linux/amd64' }}"
-                run: |
-                    sudo apt update
-                    sudo apt install -y libwebkit2gtk-4.1-dev
-            -   uses: DjLeChuck/wails-build-action@feature/allow-wails-build-tags
+            -   uses: The-Egg-Corp/wails-build-action@v2.1
                 with:
+                    name: ${{ matrix.build.name }}
                     build-name: ${{ matrix.build.name }}
                     build-platform: ${{ matrix.build.platform }}
-                    build-tags: ${{ matrix.build.tags }}
+                    go-version: '1.25'
+                    nsis: false
                     sign: false
