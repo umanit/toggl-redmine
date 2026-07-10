@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-07-10
+
 ### Added
 
 - Ajout d'un environnement de développement Nix (`flake.nix` + `.envrc`) fournissant Go, la CLI Wails, Node.js et les
@@ -15,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pouvoir réessayer
 - Blocage de la synchronisation d'une tâche toggl track dont le ticket Redmine associé est fermé depuis plus de
   15 jours
-- Le n° du ticket est cliquable et renvoie sur Redmine 
+- Le n° du ticket est cliquable et renvoie sur Redmine
 
 ### Fixed
 
@@ -66,7 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Première version pour la 2.0 🚀
 
-[Unreleased]: https://github.com/umanit/toggl-redmine/compare/2.1.1...HEAD
+[Unreleased]: https://github.com/umanit/toggl-redmine/compare/2.2.0...HEAD
+
+[2.2.0]: https://github.com/umanit/toggl-redmine/compare/2.1.1...2.2.0
 
 [2.1.1]: https://github.com/umanit/toggl-redmine/compare/2.1.0...2.1.1
 
