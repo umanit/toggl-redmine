@@ -64,3 +64,19 @@ Voir [`CHANGELOG.md`](CHANGELOG.md) pour l'historique des versions.
 
 Les releases sont construites automatiquement par la CI GitHub Actions (`.github/workflows/main.yaml`) sur chaque
 tag Git poussé : builds `linux/amd64` et `darwin/universal`, publiés en release GitHub.
+
+Le binaire `linux/amd64` est compilé sous Ubuntu et lié dynamiquement contre les libs système à leur emplacement
+standard (FHS) : il fonctionne tel quel sur Ubuntu/Debian et distributions similaires, mais **pas sur NixOS**
+(erreur `error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file`, NixOS n'ayant
+pas cette arborescence FHS). Sur NixOS, utiliser plutôt le flake du repo :
+
+```sh
+nix run github:umanit/toggl-redmine
+```
+
+ou, depuis un clone local :
+
+```sh
+nix build .
+nix run .
+```

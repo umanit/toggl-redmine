@@ -10,8 +10,55 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+
+        frontendDist = pkgs.buildNpmPackage {
+          pname = "toggl-redmine-frontend";
+          version = "0.0.0";
+
+          src = ./frontend;
+
+          npmDepsHash = "sha256-iW4qAO2nmER73VQtwQ1U8er86xY0NtqcowH/Q9AJwa0=";
+
+          npmBuildScript = "build";
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r dist/. $out/
+          '';
+        };
       in
       {
+        packages.default = pkgs.buildGoModule {
+          pname = "toggl-redmine";
+          version = "2.2.0";
+
+          src = ./.;
+
+          vendorHash = "sha256-ggOBBYw3eL/nYm1mvlZkCSNvExCvayDFG2jYXAk7QOM=";
+
+          tags = [ "production" "webkit2_41" ];
+
+          env.CGO_ENABLED = "1";
+
+          nativeBuildInputs = [ pkgs.pkg-config ];
+          buildInputs = [ pkgs.gtk3 pkgs.webkitgtk_4_1 ];
+
+          postPatch = ''
+            rm -rf frontend/dist
+            cp -r ${frontendDist} frontend/dist
+          '';
+
+          meta = {
+            description = "Synchronise les entrées toggl track vers Redmine";
+            mainProgram = "toggl-redmine";
+          };
+        };
+
+        apps.default = {
+          type = "app";
+          program = "${self.packages.${system}.default}/bin/toggl-redmine";
+        };
+
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.go

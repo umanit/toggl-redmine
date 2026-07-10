@@ -73,3 +73,11 @@ CI (`.github/workflows/main.yaml`) builds on every pushed tag via `The-Egg-Corp/
 `linux/amd64` and `darwin/universal` binaries, published as a GitHub release. The action auto-detects the Ubuntu
 version to install the matching `libwebkit2gtk` dev package and add the `webkit2_41` build tag on 24.04 — this is
 redundant with, but harmless alongside, the `build:tags` fixed in `wails.json`.
+
+The `linux/amd64` release binary is dynamically linked against FHS-standard system library paths (Ubuntu), so it
+does not run on NixOS (`libglib-2.0.so.0: cannot open shared object file`). `flake.nix` additionally exposes
+`packages.default`/`apps.default` — a `buildGoModule` derivation (frontend built via `buildNpmPackage`, output
+copied into `frontend/dist` before `go build`, tags `production,webkit2_41` to match what `wails build` passes)
+that nixpkgs' fixup phase auto-patches against `gtk3`/`webkitgtk_4_1` in the Nix store. NixOS users should run
+`nix run github:umanit/toggl-redmine` (or `nix build .` / `nix run .` from a clone) instead of the GitHub release
+binary. This is unrelated to, and does not change, the CI pipeline above.
