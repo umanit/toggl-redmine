@@ -4,7 +4,8 @@ import DatePicker, {registerLocale} from 'react-datepicker';
 import {fr} from 'date-fns/locale/fr';
 import {format, parseJSON} from 'date-fns';
 import warning from './assets/images/warning.svg';
-import {LoadTasks, SynchronizeTasks} from '../wailsjs/go/main/App.js';
+import {LoadConfig, LoadTasks, SynchronizeTasks} from '../wailsjs/go/main/App.js';
+import {BrowserOpenURL} from '../wailsjs/runtime/runtime.js';
 
 import 'react-datepicker/dist/react-datepicker.min.css';
 
@@ -42,6 +43,7 @@ export default function Synchronize() {
   const [entries, setEntries] = useState([]);
   const [synchronising, setSynchronising] = useState(false);
   const [togglQuotaResetsIn, setTogglQuotaResetsIn] = useState(null);
+  const [redmineUrl, setRedmineUrl] = useState('');
 
   const loadTasks = () => {
     setEntries([]);
@@ -76,6 +78,10 @@ export default function Synchronize() {
       setSynchronising(false);
     });
   };
+
+  useEffect(() => {
+    LoadConfig().then(({Config}) => setRedmineUrl(Config.redmine?.url ?? ''));
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -179,7 +185,17 @@ export default function Synchronize() {
                       </OverlayTrigger>
                     }
                   </th>
-                  <td>{`#${Issue}`}</td>
+                  <td>
+                    <a
+                      href={`${redmineUrl}/issues/${Issue}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        BrowserOpenURL(`${redmineUrl}/issues/${Issue}`);
+                      }}
+                    >
+                      {`#${Issue}`}
+                    </a>
+                  </td>
                   <td>{formattedDate(Date)}</td>
                   <td className="text-center">
                     {IsRunning
