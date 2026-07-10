@@ -80,3 +80,10 @@ ou, depuis un clone local :
 nix build .
 nix run .
 ```
+
+Pour une installation persistante (avec entrée dans le menu applications et icône), plutôt que
+`nix run` à chaque lancement :
+
+```sh
+nix profile install github:umanit/toggl-redmine
+```

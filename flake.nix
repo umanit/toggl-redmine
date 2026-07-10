@@ -48,6 +48,15 @@
             cp -r ${frontendDist} frontend/dist
           '';
 
+          postInstall = ''
+            install -Dm444 build/linux/usr/local/share/pixmaps/toggl-redmine.png \
+              $out/share/pixmaps/toggl-redmine.png
+            install -Dm444 build/linux/usr/local/share/applications/toggl-redmine.desktop \
+              $out/share/applications/toggl-redmine.desktop
+            substituteInPlace $out/share/applications/toggl-redmine.desktop \
+              --replace-fail 'Exec=' 'Exec=toggl-redmine'
+          '';
+
           meta = {
             description = "Synchronise les entrées toggl track vers Redmine";
             mainProgram = "toggl-redmine";
