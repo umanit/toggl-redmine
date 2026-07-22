@@ -19,6 +19,11 @@ func GetAppDir() string {
 	return filepath.Join(dir, appDirName)
 }
 
+// GetLogsPath renvoie le chemin d’accès au fichier de logs de l’application.
+func GetLogsPath() string {
+	return filepath.Join(GetAppDir(), "logs.log")
+}
+
 // legacyAppDir renvoie l’ancien emplacement du répertoire de l’application
 // ($HOME/.toggl-redmine), utilisé avant la bascule vers les conventions de l’OS.
 func legacyAppDir() string {

@@ -7,6 +7,8 @@ import {api} from '../models';
 
 export function CanSynchronize():Promise<boolean>;
 
+export function GetLogsPath():Promise<string>;
+
 export function LoadConfig():Promise<main.LoadedConfig>;
 
 export function LoadTasks(arg1:string,arg2:string):Promise<toggltrack.AskedTasks>;

@@ -4,15 +4,21 @@ import {Alert, Breadcrumb, BreadcrumbItem, Col, Container, Row} from 'react-boot
 import {BreadcrumbItemLink} from './Links/BreadcrumbItemLink.jsx';
 import banner from './assets/images/banner.png';
 import {EventsOff, EventsOn} from "../wailsjs/runtime/runtime.js";
+import {GetLogsPath} from "../wailsjs/go/main/App.js";
 
 const Layout = () => {
   const [errorOccured, setErrorOccured] = useState(false);
+  const [logsPath, setLogsPath] = useState('');
   const {pathname} = useLocation();
 
   useEffect(() => {
     EventsOn("goError", () => setErrorOccured(true));
 
     return () => EventsOff("goError");
+  }, []);
+
+  useEffect(() => {
+    GetLogsPath().then(setLogsPath);
   }, []);
 
   return (
@@ -45,7 +51,7 @@ const Layout = () => {
       <Row>
         <Col>
           {errorOccured && <Alert variant="danger">
-            Une erreur est survenue ! Merci d’aller voir les logs dans <code>~/.toggl-redmine/logs.log</code>.
+            Une erreur est survenue ! Merci d’aller voir les logs dans <code>{logsPath}</code>.
           </Alert>}
           <Outlet />
         </Col>

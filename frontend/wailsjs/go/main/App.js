@@ -6,6 +6,10 @@ export function CanSynchronize() {
   return window['go']['main']['App']['CanSynchronize']();
 }
 
+export function GetLogsPath() {
+  return window['go']['main']['App']['GetLogsPath']();
+}
+
 export function LoadConfig() {
   return window['go']['main']['App']['LoadConfig']();
 }

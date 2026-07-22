@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/umanit/toggl-redmine/internal/api"
+	"github.com/umanit/toggl-redmine/internal/app"
 	"github.com/umanit/toggl-redmine/internal/cfg"
 	"github.com/umanit/toggl-redmine/internal/toggltrack"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -55,6 +56,11 @@ func (a *App) logFatal(msg string) {
 func (a *App) logFatalf(msg string, args ...interface{}) {
 	runtime.EventsEmit(a.ctx, errorEvent)
 	runtime.LogFatalf(a.ctx, msg, args)
+}
+
+// GetLogsPath renvoie le chemin absolu vers le fichier de logs de l’application.
+func (a *App) GetLogsPath() string {
+	return app.GetLogsPath()
 }
 
 // CanSynchronize indique si l’accès à l’écran « Synchroniser » est possible ou non.
